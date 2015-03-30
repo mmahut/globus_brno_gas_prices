@@ -1,24 +1,26 @@
-# This is a template for a Ruby scraper on Morph (https://morph.io)
-# including some code snippets below that you should find helpful
+require 'scraperwiki'
+require 'mechanize'
 
-# require 'scraperwiki'
-# require 'mechanize'
-#
-# agent = Mechanize.new
-#
-# # Read in a page
-# page = agent.get("http://foo.com")
-#
-# # Find somehing on the page using css selectors
-# p page.at('div.content')
-#
-# # Write out to the sqlite database using scraperwiki library
-# ScraperWiki.save_sqlite(["name"], {"name" => "susan", "occupation" => "software developer"})
-#
-# # An arbitrary query against the database
-# ScraperWiki.select("* from data where 'name'='peter'")
+agent = Mechanize.new
+products = Array.new
+prices = Array.new
 
-# You don't have to do things with the Mechanize or ScraperWiki libraries. You can use whatever gems are installed
-# on Morph for Ruby (https://github.com/openaustralia/morph-docker-ruby/blob/master/Gemfile) and all that matters
-# is that your final data is written to an Sqlite database called data.sqlite in the current working directory which
-# has at least a table called data.
+# Read in a page
+page = agent.get("https://www.globus.cz/brno/cerpaci-stanice-a-myci-linka.html")
+
+# Get the product names
+page.search("td[@class='prices__cell prices__cell--product']").each do |product|
+  products.push(product.text.gsub(" ","_"))
+end
+
+# Get the prices
+page.search("td[@class='prices__cell prices__cell--price']").each do |price|
+  prices.push(price.text.gsub(",","."))
+end
+
+
+couple = Hash[products.zip(prices)]
+couple['date'] = Time.now.to_i
+
+# Send to ScraperWiki
+ScraperWiki.save_sqlite(["date"], couple)
