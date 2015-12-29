@@ -10,7 +10,8 @@ page = agent.get("https://www.globus.cz/brno/cerpaci-stanice-a-myci-linka.html")
 
 # Get the product names
 page.search("td[@class='prices__cell prices__cell--product']").each do |product|
-  products.push(product.text.gsub(" ","_"))
+  product_text = product.text.gsub(/i$/,"").strip
+  products.push(product_text.gsub(" ","_"))
 end
 
 # Get the prices
